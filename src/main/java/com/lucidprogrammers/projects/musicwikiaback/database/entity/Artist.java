@@ -8,6 +8,12 @@ import java.math.BigInteger;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * Entity that holds the artists information
+ *
+ * @author Benjamin Gil Flores
+ * @since 1.0.0
+ */
 @Getter
 @Setter
 @Entity

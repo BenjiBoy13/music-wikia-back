@@ -5,6 +5,12 @@ import lombok.Setter;
 
 import javax.persistence.*;
 
+/**
+ * Entity that holds songs information
+ *
+ * @author Benjamin Gil Flores
+ * @since 1.0.0
+ */
 @Getter
 @Setter
 @Entity

@@ -8,6 +8,12 @@ import javax.persistence.*;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * Entity that holds the artist records/albums information
+ *
+ * @author Benjamin Gil Flores
+ * @since 1.0.0
+ */
 @Getter
 @Setter
 @Entity
