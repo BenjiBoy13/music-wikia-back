@@ -1,0 +1,14 @@
+spring:
+  # Datasource and JPA
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL5Dialect
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+  datasource:
+    url: 'jdbc:mysql://localhost:3306/music_wikia'
+    username: root
+    password: BgF04131999
