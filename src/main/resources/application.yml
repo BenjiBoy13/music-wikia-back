@@ -14,6 +14,11 @@ spring:
     username: root
     password: BgF04131999
 
+# Server
+server:
+  error:
+    include-message: always
+
 # Security
 security:
   jwt:

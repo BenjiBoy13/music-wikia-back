@@ -5,20 +5,18 @@ import com.lucidprogrammers.projects.musicwikiaback.database.repository.UserRepo
 import com.lucidprogrammers.projects.musicwikiaback.util.Constants;
 import com.lucidprogrammers.projects.musicwikiaback.web.model.request.UserRequestModel;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
 
 @Component
+@RequiredArgsConstructor
 public class UserFacade {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
-    @Autowired
-    private BCryptPasswordEncoder bCryptPasswordEncoder;
+    private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
     public User findByEmail(String email) {
         return userRepository.findByEmail(email);
