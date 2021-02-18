@@ -34,7 +34,7 @@ public class UserFacade {
         user.setPassword(bCryptPasswordEncoder.encode(userRequestModel.getPassword()));
         user.setCreatedDate(new Date());
         user.setStatus(Constants.USER_STATUS_ACTIVE);
-        user.setRole(Constants.ROL_USER);
+        user.setRole(Constants.ROLE_USER);
 
         return user;
     }

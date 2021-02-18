@@ -38,7 +38,7 @@ public class User {
     private Character status = Constants.USER_STATUS_ACTIVE;
 
     @Column(length = 50, nullable = false)
-    private String role = Constants.ROL_USER;
+    private String role = Constants.ROLE_USER;
 
     private Date createdDate = new Date();
 

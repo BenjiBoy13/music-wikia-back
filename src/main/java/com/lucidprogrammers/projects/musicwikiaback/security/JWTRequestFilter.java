@@ -29,6 +29,14 @@ import java.util.Objects;
 @Component
 public class JWTRequestFilter extends OncePerRequestFilter {
 
+    private final static String HEADER_AUTHORIZATION = "Authorization";
+
+    private final static String TOKEN_BEARER = "Bearer ";
+
+    private final static String ERROR_TOKEN_INVALID = "Token is invalid";
+
+    private final static String ERROR_TOKEN_EXPIRED = "Token has expired";
+
     /**
      * Verifies if a token was sent and validates
      * it to retrieve and set the permissions for the
@@ -45,23 +53,23 @@ public class JWTRequestFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest httpServletRequest,
                                     HttpServletResponse httpServletResponse,
                                     FilterChain filterChain) throws ServletException, IOException {
-        final String requestTokenHeader = httpServletRequest.getHeader("Authorization");
+        final String requestTokenHeader = httpServletRequest.getHeader(HEADER_AUTHORIZATION);
 
-        if (Objects.nonNull(requestTokenHeader) && requestTokenHeader.startsWith("Bearer ")) {
+        if (Objects.nonNull(requestTokenHeader) && requestTokenHeader.startsWith(TOKEN_BEARER)) {
             String token = requestTokenHeader.substring(7);
-            String username;
+            String email;
 
             try {
-                username = JWTTokenUtil.getClaimFromToken(token, Claims::getSubject);
+                email = JWTTokenUtil.getClaimFromToken(token, Claims::getSubject);
             } catch (ExpiredJwtException expiredJwtException) {
-                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Token has expired");
+                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, ERROR_TOKEN_EXPIRED);
             } catch (Exception exception){
-                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Token is invalid");
+                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, ERROR_TOKEN_INVALID);
             }
 
             UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken =
                     new UsernamePasswordAuthenticationToken(
-                            username, null, JWTTokenUtil.getAuthoritiesFromToken(token)
+                            email, null, JWTTokenUtil.getAuthoritiesFromToken(token)
                     );
 
             usernamePasswordAuthenticationToken.setDetails(new WebAuthenticationDetailsSource()

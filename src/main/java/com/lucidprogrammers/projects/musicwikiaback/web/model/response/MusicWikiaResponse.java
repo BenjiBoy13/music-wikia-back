@@ -4,10 +4,20 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ * HTTP base response data model
+ * for all API responses
+ *
+ * @author Benjamin Gil FLores
+ * @since 1.0.0
+ *
+ * @param <T> response HTTP data model
+ * @see ResponseModel
+ */
 @Getter
 @Setter
 @AllArgsConstructor
-public class MusicWikiaResponse<T> {
+public class MusicWikiaResponse<T extends ResponseModel> {
 
     private String message;
 
@@ -15,6 +25,6 @@ public class MusicWikiaResponse<T> {
 
     private Integer code;
 
-    private T t;
+    private T response;
 
 }

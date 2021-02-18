@@ -2,27 +2,27 @@ package com.lucidprogrammers.projects.musicwikiaback.app.service;
 
 import com.lucidprogrammers.projects.musicwikiaback.database.entity.User;
 import com.lucidprogrammers.projects.musicwikiaback.database.facade.UserFacade;
+import com.lucidprogrammers.projects.musicwikiaback.util.Constants;
 import com.lucidprogrammers.projects.musicwikiaback.util.JWTTokenUtil;
 import com.lucidprogrammers.projects.musicwikiaback.web.model.request.UserRequestModel;
+import com.lucidprogrammers.projects.musicwikiaback.web.model.response.TokenResponseModel;
 import com.lucidprogrammers.projects.musicwikiaback.web.model.response.UserResponseModel;
+import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Handles all business operations related
@@ -34,6 +34,9 @@ import java.util.Objects;
 @Service
 @RequiredArgsConstructor
 public class UserService implements UserDetailsService {
+
+    private final static String UNEXPECTED_ERROR_AUTHENTICATION_ERROR =
+            "Unexpected server error while authenticating user";
 
     private final UserFacade userFacade;
 
@@ -54,11 +57,13 @@ public class UserService implements UserDetailsService {
         if (Objects.isNull(user))
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Username was not found");
 
-        List<String> roles = Arrays.asList(user.getRole().split(";"));
-        List<GrantedAuthority> authorities = new ArrayList<>();
-        roles.forEach(r -> authorities.add(new SimpleGrantedAuthority("ROLE_" + r)));
+        List<GrantedAuthority> authorities = Arrays.stream(user.getRole().split(Constants.ROLE_SEPARATOR))
+                .map(r -> new SimpleGrantedAuthority(Constants.ROLE_STARTER + r))
+                .collect(Collectors.toList());
 
-        return new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(), authorities);
+        return new org.springframework.security.core.userdetails.User(
+                user.getEmail(), user.getPassword(), authorities
+        );
     }
 
     /**
@@ -68,14 +73,20 @@ public class UserService implements UserDetailsService {
      * @param userRequestModel HTTP request containing user data
      * @return HTTP response containing user token
      */
-    public UserResponseModel login(UserRequestModel userRequestModel) {
-        authenticate(userRequestModel.getEmail(), userRequestModel.getPassword());
+    public TokenResponseModel login(UserRequestModel userRequestModel) {
+        Authentication recentlyAuthenticatedUser =
+                authenticate(userRequestModel.getEmail(), userRequestModel.getPassword());
 
-        final UserDetails userDetails = loadUserByUsername(userRequestModel.getEmail());
+        final String token = JWTTokenUtil.generateToken(
+                ((UserDetails) recentlyAuthenticatedUser.getPrincipal()).getUsername(),
+                recentlyAuthenticatedUser.getAuthorities()
+        );
 
-        final String token = JWTTokenUtil.generateToken(userDetails.getUsername(), userDetails.getAuthorities());
-
-        return new UserResponseModel(null, null, null, null, null, token);
+        return new TokenResponseModel(
+                JWTTokenUtil.getClaimFromToken(token, Claims::getIssuer),
+                JWTTokenUtil.getClaimFromToken(token, Claims::getExpiration),
+                token
+        );
     }
 
     /**
@@ -98,8 +109,7 @@ public class UserService implements UserDetailsService {
      */
     private UserResponseModel userEntityToUserResponse(User user) {
         return new UserResponseModel(
-                user.getFullName(), user.getUsername(), user.getEmail(), user.getRole(), user.getCreatedDate(),
-                null
+                user.getFullName(), user.getUsername(), user.getEmail(), user.getRole(), user.getCreatedDate()
         );
     }
 
@@ -109,14 +119,13 @@ public class UserService implements UserDetailsService {
      *
      * @param email user given email
      * @param password user given password
+     * @return recently authenticated user
      */
-    private void authenticate(String email, String password) {
+    private Authentication authenticate(String email, String password) {
         try {
-            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, password));
-        } catch (DisabledException disabledException) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Inactive user");
-        } catch (BadCredentialsException badCredentialsException) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid");
+            return authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, password));
+        } catch (AuthenticationException authenticationException) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, UNEXPECTED_ERROR_AUTHENTICATION_ERROR);
         }
     }
 

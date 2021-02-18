@@ -14,11 +14,13 @@ public class JWTAuthenticationEntryPoint implements AuthenticationEntryPoint, Se
 
     private static final long serialVersionUID = 1L;
 
+    private static final String ERROR_UNAUTHORIZED = "Unauthorized";
+
     @Override
     public void commence(HttpServletRequest httpServletRequest,
                          HttpServletResponse httpServletResponse,
                          AuthenticationException e) throws IOException {
-        httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
+        httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED, ERROR_UNAUTHORIZED);
     }
 
 }

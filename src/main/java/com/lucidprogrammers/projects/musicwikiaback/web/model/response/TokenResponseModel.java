@@ -7,7 +7,7 @@ import lombok.Setter;
 import java.util.Date;
 
 /**
- * HTTP response that holds the user data
+ * HTTP response that holds the token data
  *
  * @author Benjamin Gil Flores
  * @since 1.0.0
@@ -15,16 +15,12 @@ import java.util.Date;
 @Getter
 @Setter
 @AllArgsConstructor
-public class UserResponseModel implements ResponseModel {
+public class TokenResponseModel implements ResponseModel {
 
-    private String fullName;
+    private String issuer;
 
-    private String username;
+    private Date expirationDate;
 
-    private String email;
-
-    private String role;
-
-    private Date createdDate;
+    private String token;
 
 }

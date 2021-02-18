@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 import java.io.Serializable;
 import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Utility for JWT token creation and general
@@ -73,10 +74,10 @@ public class JWTTokenUtil implements Serializable {
      */
     public static List<GrantedAuthority> getAuthoritiesFromToken(String token) {
         String authoritiesString = (String) getClaimFromToken(token, c -> c.get("authorities"));
-        List<GrantedAuthority> grantedAuthorities = new ArrayList<>();
-        Arrays.asList(authoritiesString.split(";"))
-                .forEach(s -> grantedAuthorities.add(new SimpleGrantedAuthority(s)));
-        return grantedAuthorities;
+
+        return Arrays.stream(authoritiesString.split(Constants.ROLE_SEPARATOR))
+                .map(SimpleGrantedAuthority::new)
+                .collect(Collectors.toList());
     }
 
     /**
