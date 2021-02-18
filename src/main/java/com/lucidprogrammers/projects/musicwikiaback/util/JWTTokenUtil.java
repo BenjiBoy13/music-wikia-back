@@ -51,10 +51,12 @@ public class JWTTokenUtil implements Serializable {
      * @return generated JWT token
      */
     public static String generateToken(String email, Collection<? extends GrantedAuthority> authorities) {
-        List<String> roles = new ArrayList<>();
+        String roles = authorities.stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.joining(Constants.ROLE_SEPARATOR));
+
         Map<String, Object> map = new HashMap<>();
-        authorities.forEach(a -> roles.add(a.getAuthority()));
-        map.put("authorities", String.join(";", roles));
+        map.put("authorities", roles);
 
         return Jwts.builder().setClaims(map)
                 .setSubject(email)
