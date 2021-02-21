@@ -39,7 +39,7 @@ public class JWTTokenUtil implements Serializable {
      */
     @Value("${security.jwt.secret}")
     public void setSecretStatic(String secret) {
-        SECRET = secret;
+        JWTTokenUtil.SECRET = secret;
     }
 
     /**

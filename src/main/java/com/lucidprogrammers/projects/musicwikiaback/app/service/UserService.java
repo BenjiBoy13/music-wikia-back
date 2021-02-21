@@ -18,6 +18,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -34,9 +35,6 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class UserService implements UserDetailsService {
-
-    private final static String UNEXPECTED_ERROR_AUTHENTICATION_ERROR =
-            "Unexpected server error while authenticating user";
 
     private final UserFacade userFacade;
 
@@ -55,14 +53,20 @@ public class UserService implements UserDetailsService {
         User user = userFacade.findByEmail(s);
 
         if (Objects.isNull(user))
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Username was not found");
+            throw new UsernameNotFoundException("User was not found");
 
         List<GrantedAuthority> authorities = Arrays.stream(user.getRole().split(Constants.ROLE_SEPARATOR))
                 .map(r -> new SimpleGrantedAuthority(Constants.ROLE_STARTER + r))
                 .collect(Collectors.toList());
 
         return new org.springframework.security.core.userdetails.User(
-                user.getEmail(), user.getPassword(), authorities
+                user.getEmail(),
+                user.getPassword(),
+                Constants.USER_STATUS_ACTIVE.equals(user.getStatus()),
+                Constants.TRUE,
+                Constants.TRUE,
+                Constants.TRUE,
+                authorities
         );
     }
 
@@ -125,7 +129,8 @@ public class UserService implements UserDetailsService {
         try {
             return authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, password));
         } catch (AuthenticationException authenticationException) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, UNEXPECTED_ERROR_AUTHENTICATION_ERROR);
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
+                    authenticationException.getMessage(), authenticationException);
         }
     }
 
