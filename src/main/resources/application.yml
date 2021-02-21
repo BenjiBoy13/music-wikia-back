@@ -1,3 +1,4 @@
+# Spring
 spring:
   # Datasource and JPA
   jpa:
@@ -12,3 +13,13 @@ spring:
     url: 'jdbc:mysql://localhost:3306/music_wikia'
     username: root
     password: BgF04131999
+
+# Server
+server:
+  error:
+    include-message: always
+
+# Security
+security:
+  jwt:
+    secret: musicwikia
